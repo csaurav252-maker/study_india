@@ -1,4 +1,4 @@
-# Final Updated Ed-Tech App with Gemini 3.8 Flash Integration
+# Clean Professional AI-Only Ed-Tech App (No Dummies)
 
 app_code = """import sqlite3
 import streamlit as st
@@ -44,7 +44,7 @@ st.markdown(
 )
 
 
-# --- Database Setup & Massive Question Pool Initialization ---
+# --- Database Setup & Core Pool Initialization ---
 def init_db():
     conn = sqlite3.connect("pro_learning.db")
     cursor = conn.cursor()
@@ -63,29 +63,7 @@ def init_db():
         )
     \"\"\"
     )
-
-    cursor.execute("SELECT COUNT(*) FROM questions")
-    count = cursor.fetchone()[0]
-
-    if count < 50:
-        massive_bank = [
-            ("MPSC / UPSC", "History", "भारताचे पहिले सरन्यायाधीश कोण होते?", "H. J. Kania", "Dr. B. R. Ambedkar", "Jawaharlal Nehru", "Sardar Patel", "A"),
-            ("MPSC / UPSC", "Geography", "महाराष्ट्रातील सर्वात लांब नदी कोणती आहे?", "कृष्णा", "गोदावरी", "तापी", "भीमा", "B"),
-            ("MCA / BCA", "Python", "Python मध्ये list तयार करण्यासाठी कोणत्या ब्रॅकेट्सचा वापर होतो?", "{} (Curly)", "[] (Square)", "() (Parentheses)", "<> (Angle)", "B"),
-            ("MCA / BCA", "Database", "SQL चा फुल फॉर्म खालीलपैकी काय आहे?", "Structured Query Language", "Simple Question Language", "Standard Query Logic", "System Quality Language", "A"),
-            ("CA / Commerce", "Taxation", "भारतात वस्तू आणि सेवा कर (GST) कधीपासून लागू झाला?", "1 July 2017", "1 January 2016", "15 August 2017", "1 April 2018", "A"),
-            ("Science", "Physics", "प्रकाशाचा वेग निर्वात पोकळीत (Vacuum) किती असतो?", "3 × 10^8 m/s", "3 × 10^6 m/s", "3 × 10^5 km/h", "300 m/s", "A"),
-            ("Nursing", "Anatomy", "मानवी शरीरात रक्ताभिसरण संस्थेचा मुख्य अवयव कोणता आहे?", "हृदय (Heart)", "फुफ्फुस", "यकृत", "किडनी", "A"),
-        ]
-        cursor.executemany(
-            \"\"\"
-            INSERT INTO questions (stream, topic, question, opt_a, opt_b, opt_c, opt_d, correct)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        \"\"\",
-            massive_bank,
-        )
-        conn.commit()
-
+    conn.commit()
     conn.close()
 
 
@@ -101,110 +79,98 @@ api_key_input = st.sidebar.text_input("Enter Google Gemini API Key", type="passw
 st.sidebar.markdown("---")
 menu = st.sidebar.radio(
     "Navigation Menu", 
-    ["🤖 AI Massive Generator (100+)", "📝 Take Large Test (100+ Pool)"]
+    ["🤖 AI Real Question Generator", "📝 Take Mega Test (100+ Pool)"]
 )
 
 conn = sqlite3.connect("pro_learning.db")
 cursor = conn.cursor()
 
-if menu == "🤖 AI Massive Generator (100+)":
-    st.title("🤖 Massive 100+ Question Generator (Gemini 3.8)")
-    st.markdown("येथे तू एकाच क्लिकवर **१०० किंवा त्याहून अधिक प्रश्न** थेट Gemini AI कडून जनरेट करू शकतोस!")
+if menu == "🤖 AI Real Question Generator":
+    st.title("🤖 Real AI Question Generator (Gemini 3.8)")
+    st.markdown("येथे फक्त आणि फक्त **खऱ्या आणि दर्जेदार प्रश्नांची** निर्मिती केली जाईल (कोणतेही डमी प्रश्न नाहीत).")
 
     with st.form("ai_gen_form"):
         ai_stream = st.selectbox(
             "Select Faculty", 
             ["MPSC / UPSC", "MCA / BCA", "CA / Commerce", "Science", "Nursing"]
         )
-        ai_topic = st.text_input("Enter Syllabus Topic (उदा. Advanced Python, Indian Constitution, Corporate Tax)")
+        ai_topic = st.text_input("Enter Syllabus Topic (उदा. Python Functions, Indian Polity, GST, Anatomy)")
         
-        ai_count = st.slider("How many questions to generate?", min_value=10, max_value=100, value=50, step=10)
+        # AI वर जास्त ताण येऊ नये म्हणून योग्य बॅच साइज (उदा. 15 ते 20 प्रश्न एका वेळी)
+        ai_count = st.slider("How many questions to generate in this batch?", min_value=5, max_value=25, value=15, step=5)
         
-        generate_btn = st.form_submit_button("✨ Generate Massive Question Pool via Gemini 3.8")
+        generate_btn = st.form_submit_button("✨ Generate Real Questions via Gemini AI")
 
         if generate_btn:
-            if not ai_topic:
+            if not api_key_input:
+                st.error("⚠️ कृपया डाव्या बाजूच्या मेनूमध्ये तुमची Google Gemini API Key प्रविष्ट करा.")
+            elif not ai_topic:
                 st.error("⚠️ कृपया सिलॅबस टॉपिकचे नाव प्रविष्ट करा.")
             else:
-                success_generated = False
-                
-                if api_key_input:
-                    try:
-                        genai.configure(api_key=api_key_input)
-                        # नवीन आणि लेटेस्ट Gemini 3.8 Flash मॉडेल सेट केले आहे
-                        model = genai.GenerativeModel("models/gemini-3.8-flash")
+                try:
+                    genai.configure(api_key=api_key_input)
+                    # अधिकृत आणि लेटेस्ट Gemini 3.8 Flash मॉडेल
+                    model = genai.GenerativeModel("models/gemini-3.8-flash")
+                    
+                    prompt = f\"\"\"
+                    You are an expert professor and examiner for {ai_stream}. 
+                    Generate exactly {ai_count} professional, high-quality multiple-choice questions for the topic "{ai_topic}" matching the 2026 syllabus.
+                    Format each question strictly in this format using '###' as a separator between questions:
+                    Question text here?
+                    A) Option 1
+                    B) Option 2
+                    C) Option 3
+                    D) Option 4
+                    Correct: A
+                    ###
+                    Make sure questions are completely accurate, academic, and relevant.
+                    \"\"\"
+                    
+                    with st.spinner(f"🔄 Gemini AI {ai_topic} वर अचूक प्रश्न तयार करत आहे... कृपया थोडा वेळ थांबा."):
+                        response = model.generate_content(prompt)
+                        text_output = response.text
                         
-                        prompt = f\"\"\"
-                        You are an expert professor for {ai_stream}. 
-                        Generate a massive set of {ai_count} high-quality, professional multiple-choice questions for the topic "{ai_topic}" matching the 2026 syllabus.
-                        Format strictly using '###' as a separator between each question:
-                        Question text here?
-                        A) Option 1
-                        B) Option 2
-                        C) Option 3
-                        D) Option 4
-                        Correct: A
-                        ###
-                        \"\"\"
-                        with st.spinner(f"🔄 Gemini 3.8 AI {ai_count} प्रश्न तयार करत आहे... कृपया थोडा वेळ थांबा."):
-                            response = model.generate_content(prompt)
-                            raw_blocks = response.text.split("###")
-                            count_added = 0
-                            for block in raw_blocks:
-                                lines = [l.strip() for l in block.strip().split("\\n") if l.strip()]
-                                if len(lines) >= 6:
-                                    q_text = lines[0]
-                                    o_a = lines[1][2:].strip()
-                                    o_b = lines[2][2:].strip()
-                                    o_c = lines[3][2:].strip()
-                                    o_d = lines[4][2:].strip()
-                                    corr = "A"
-                                    for l in lines[5:]:
-                                        if "B" in l.upper(): corr = "B"
-                                        elif "C" in l.upper(): corr = "C"
-                                        elif "D" in l.upper(): corr = "D"
+                        raw_questions = text_output.split("###")
+                        added_count = 0
+                        
+                        for q_block in raw_questions:
+                            lines = [l.strip() for l in q_block.strip().split("\\n") if l.strip()]
+                            if len(lines) >= 6:
+                                q_text = lines[0]
+                                o_a = lines[1][2:].strip() if lines[1].startswith("A)") else lines[1]
+                                o_b = lines[2][2:].strip() if lines[2].startswith("B)") else lines[2]
+                                o_c = lines[3][2:].strip() if lines[3].startswith("C)") else lines[3]
+                                o_d = lines[4][2:].strip() if lines[4].startswith("D)") else lines[4]
+                                
+                                correct_ans = "A"
+                                for l in lines[5:]:
+                                    if "Correct" in l or "अचूक" in l:
+                                        if "B" in l.upper(): correct_ans = "B"
+                                        elif "C" in l.upper(): correct_ans = "C"
+                                        elif "D" in l.upper(): correct_ans = "D"
                                         break
-                                    cursor.execute(
-                                        \"\"\"
-                                        INSERT INTO questions (stream, topic, question, opt_a, opt_b, opt_c, opt_d, correct)
-                                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                                    \"\"\",
-                                        (ai_stream, ai_topic, q_text, o_a, o_b, o_c, o_d, corr)
-                                    )
-                                    count_added += 1
-                            if count_added > 0:
-                                conn.commit()
-                                success_generated = True
-                                st.success(f"✅ Gemini 3.8 AI ने यशस्वीरित्या **{count_added}** नवीन प्रश्न डेटाबेसमध्ये जोडले!")
-                    except Exception as e:
-                        st.warning(f"⚠️ API मध्ये अडचण आली ({e}), त्यामुळे इन्स्टंट बल्क जनरेटर वापरला जात आहे.")
+                                
+                                cursor.execute(
+                                    \"\"\"
+                                    INSERT INTO questions (stream, topic, question, opt_a, opt_b, opt_c, opt_d, correct)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                                \"\"\",
+                                    (ai_stream, ai_topic, q_text, o_a, o_b, o_c, o_d, correct_ans)
+                                )
+                                added_count += 1
+                        
+                        conn.commit()
+                        if added_count > 0:
+                            st.success(f"✅ Gemini AI द्वारे '{ai_topic}' वर यशस्वीरित्या **{added_count}** अस्सल प्रश्न डेटाबेसमध्ये जोडले गेले आहेत!")
+                            st.info("👈 आता 'Take Mega Test' मध्ये जाऊन हे प्रश्न सोडून पहा.")
+                        else:
+                            st.warning("⚠️ AI ने रिस्पॉन्स दिला पण फॉर्मेट जुळला नाही. पुन्हा प्रयत्न करा.")
+                            
+                except Exception as e:
+                    st.error(f"❌ API एरर आला: {str(e)}")
 
-                if not success_generated:
-                    bulk_samples = []
-                    for i in range(1, ai_count + 1):
-                        bulk_samples.append((
-                            ai_stream,
-                            ai_topic,
-                            f"[{ai_stream} - 2026 Syllabus] {ai_topic} वरील सराव प्रश्न क्र. {i}: खालीलपैकी अचूक पर्याय निवडा.",
-                            f"{ai_topic} - संदर्भ पर्याय A",
-                            f"{ai_topic} - अचूक उत्तर पर्याय B",
-                            f"{ai_topic} - संदर्भ पर्याय C",
-                            f"{ai_topic} - संदर्भ पर्याय D",
-                            "B"
-                        ))
-                    cursor.executemany(
-                        \"\"\"
-                        INSERT INTO questions (stream, topic, question, opt_a, opt_b, opt_c, opt_d, correct)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                    \"\"\",
-                        bulk_samples
-                    )
-                    conn.commit()
-                    st.success(f"✅ '{ai_topic}' वर तब्बल **{ai_count}** नवीन प्रश्न यशस्वीरित्या डेटाबेसमध्ये समाविष्ट करण्यात आले आहेत!")
-                    st.info("👈 आता डाव्या बाजूला 'Take Large Test' मध्ये जाऊन मेगा टेस्ट सोडून पहा.")
-
-elif menu == "📝 Take Large Test (100+ Pool)":
-    st.title("📝 Mega Faculty Test (100+ Pool Engine)")
+elif menu == "📝 Take Mega Test (100+ Pool)":
+    st.title("📝 Mega Faculty Test Engine")
 
     streams = ["MPSC / UPSC", "MCA / BCA", "CA / Commerce", "Science", "Nursing"]
     selected_stream = st.selectbox("🎯 अभ्यास शाखा (Faculty) निवडा:", streams)
@@ -213,14 +179,14 @@ elif menu == "📝 Take Large Test (100+ Pool)":
     total_available = cursor.fetchone()[0]
 
     if total_available > 0:
-        st.success(f"'{selected_stream}' या शाखेसाठी डेटाबेसमध्ये सध्या एकूण **{total_available}** प्रश्न उपलब्ध आहेत!")
+        st.success(f"'{selected_stream}' या शाखेसाठी डेटाबेसमध्ये एकूण **{total_available}** अस्सल प्रश्न उपलब्ध आहेत.")
 
-        max_limit = min(100, total_available)
+        max_limit = min(50, total_available)
         num_questions = st.slider(
-            "⚙️ तुम्हाला या टेस्टमध्ये किती प्रश्न सोडवायचे आहेत?",
+            "⚙️ टेस्टमध्ये किती प्रश्न हवे आहेत?",
             min_value=5,
             max_value=max_limit,
-            value=min(20, max_limit),
+            value=min(10, max_limit),
             step=5
         )
 
@@ -239,7 +205,7 @@ elif menu == "📝 Take Large Test (100+ Pool)":
                     f\"\"\"
                     <div class="question-card">
                         <h4>Q{i+1}: {q_text}</h4>
-                        <p style="color: gray; font-size: 14px;">Topic: {topic}</p>
+                        <p style="color: gray; font-size: 14px;">Topic: {topic} | Stream: {stream}</p>
                     </div>
                 \"\"\",
                     unsafe_allow_html=True,
@@ -253,7 +219,7 @@ elif menu == "📝 Take Large Test (100+ Pool)":
                 user_answers[q_id] = (ans, correct, [o_a, o_b, o_c, o_d])
                 st.write("")
 
-            submitted = st.form_submit_button("🚀 Submit Mega Test & Check Score")
+            submitted = st.form_submit_button("🚀 Submit Test & Check Score")
 
             if submitted:
                 score = 0
@@ -269,17 +235,17 @@ elif menu == "📝 Take Large Test (100+ Pool)":
                         score += 1
 
                 st.markdown("---")
-                st.header("📊 Mega Test Performance Report")
+                st.header("📊 Test Performance Report")
 
                 percentage = (score / len(questions)) * 100
                 if percentage >= 70:
-                    st.success(f"🎉 अभिनंदन! तुमचे गुण: **{score} / {len(questions)}** ({percentage:.1f}%) - अतिशय उत्कृष्ट कामगिरी!")
+                    st.success(f"🎉 अभिनंदन! तुमचे गुण: **{score} / {len(questions)}** ({percentage:.1f}%) - अतिशय उच्च कामगिरी!")
                 elif percentage >= 40:
                     st.warning(f"⚠️ तुमचे गुण: **{score} / {len(questions)}** ({percentage:.1f}%) - अजून थोड्या सरावाची गरज आहे.")
                 else:
                     st.error(f"❌ तुमचे गुण: **{score} / {len(questions)}** ({percentage:.1f}%) - अधिक अभ्यासाची आवश्यकता आहे.")
     else:
-        st.warning(f"'{selected_stream}' या शाखेसाठी सध्या प्रश्न नाहीत. कृपया आधी 'AI Massive Generator' मधून प्रश्न तयार करून घ्या.")
+        st.warning(f"'{selected_stream}' या शाखेसाठी सध्या डेटाबेसमध्ये प्रश्न नाहीत. कृपया आधी 'AI Real Question Generator' मधून Gemini AI द्वारे प्रश्न तयार करून घ्या.")
 
 conn.close()
 """
@@ -288,4 +254,4 @@ conn.close()
 with open("app.py", "w", encoding="utf-8") as f:
     f.write(app_code)
 
-print("✅ 'app.py' फाईल यशस्वीरित्या अपडेट झाली आहे (Gemini 3.8 Flash मॉडेल सक्रिय)!")
+print("✅ 'app.py' फाईल यशस्वीरित्या अपडेट झाली आहे (फक्त अस्सल AI प्रश्न आणि बॅच सिस्टम सक्रिय)!")
