@@ -1,4 +1,4 @@
-# Final Ed-Tech App with Database Clear/Delete Option
+# Clean Professional AI-Only Ed-Tech App (No Dummies)
 
 app_code = """import sqlite3
 import streamlit as st
@@ -44,7 +44,7 @@ st.markdown(
 )
 
 
-# --- Database Setup ---
+# --- Database Setup & Core Pool Initialization ---
 def init_db():
     conn = sqlite3.connect("pro_learning.db")
     cursor = conn.cursor()
@@ -79,11 +79,7 @@ api_key_input = st.sidebar.text_input("Enter Google Gemini API Key", type="passw
 st.sidebar.markdown("---")
 menu = st.sidebar.radio(
     "Navigation Menu", 
-    [
-        "🤖 AI Real Question Generator", 
-        "📝 Take Mega Test (100+ Pool)",
-        "🗑️ Database Management (Delete All)"
-    ]
+    ["🤖 AI Real Question Generator", "📝 Take Mega Test (100+ Pool)"]
 )
 
 conn = sqlite3.connect("pro_learning.db")
@@ -91,15 +87,16 @@ cursor = conn.cursor()
 
 if menu == "🤖 AI Real Question Generator":
     st.title("🤖 Real AI Question Generator (Gemini 3.8)")
-    st.markdown("येथे फक्त आणि फक्त **खऱ्या आणि दर्जेदार प्रश्नांची** निर्मिती केली जाईल.")
+    st.markdown("येथे फक्त आणि फक्त **खऱ्या आणि दर्जेदार प्रश्नांची** निर्मिती केली जाईल (कोणतेही डमी प्रश्न नाहीत).")
 
     with st.form("ai_gen_form"):
         ai_stream = st.selectbox(
             "Select Faculty", 
             ["MPSC / UPSC", "MCA / BCA", "CA / Commerce", "Science", "Nursing"]
         )
-        ai_topic = st.text_input("Enter Syllabus Topic (उदा. Python Functions, Indian Polity, GST)")
+        ai_topic = st.text_input("Enter Syllabus Topic (उदा. Python Functions, Indian Polity, GST, Anatomy)")
         
+        # AI वर जास्त ताण येऊ नये म्हणून योग्य बॅच साइज (उदा. 15 ते 20 प्रश्न एका वेळी)
         ai_count = st.slider("How many questions to generate in this batch?", min_value=5, max_value=25, value=15, step=5)
         
         generate_btn = st.form_submit_button("✨ Generate Real Questions via Gemini AI")
@@ -112,6 +109,7 @@ if menu == "🤖 AI Real Question Generator":
             else:
                 try:
                     genai.configure(api_key=api_key_input)
+                    # अधिकृत आणि लेटेस्ट Gemini 3.8 Flash मॉडेल
                     model = genai.GenerativeModel("models/gemini-3.8-flash")
                     
                     prompt = f\"\"\"
@@ -164,6 +162,7 @@ if menu == "🤖 AI Real Question Generator":
                         conn.commit()
                         if added_count > 0:
                             st.success(f"✅ Gemini AI द्वारे '{ai_topic}' वर यशस्वीरित्या **{added_count}** अस्सल प्रश्न डेटाबेसमध्ये जोडले गेले आहेत!")
+                            st.info("👈 आता 'Take Mega Test' मध्ये जाऊन हे प्रश्न सोडून पहा.")
                         else:
                             st.warning("⚠️ AI ने रिस्पॉन्स दिला पण फॉर्मेट जुळला नाही. पुन्हा प्रयत्न करा.")
                             
@@ -180,7 +179,7 @@ elif menu == "📝 Take Mega Test (100+ Pool)":
     total_available = cursor.fetchone()[0]
 
     if total_available > 0:
-        st.success(f"'{selected_stream}' या शाखेसाठी डेटाबेसमध्ये एकूण **{total_available}** प्रश्न उपलब्ध आहेत.")
+        st.success(f"'{selected_stream}' या शाखेसाठी डेटाबेसमध्ये एकूण **{total_available}** अस्सल प्रश्न उपलब्ध आहेत.")
 
         max_limit = min(50, total_available)
         num_questions = st.slider(
@@ -246,21 +245,7 @@ elif menu == "📝 Take Mega Test (100+ Pool)":
                 else:
                     st.error(f"❌ तुमचे गुण: **{score} / {len(questions)}** ({percentage:.1f}%) - अधिक अभ्यासाची आवश्यकता आहे.")
     else:
-        st.warning(f"'{selected_stream}' या शाखेसाठी सध्या डेटाबेसमध्ये प्रश्न नाहीत. कृपया आधी 'AI Real Question Generator' मधून प्रश्न तयार करून घ्या.")
-
-elif menu == "🗑️ Database Management (Delete All)":
-    st.title("🗑️ Database Management & Cleanup")
-    st.markdown("येथून तू डेटाबेसमध्ये साठलेले **सर्व जुने किंवा डमी प्रश्न एकाच क्लिकवर डिलीट** करू शकतोस.")
-
-    cursor.execute("SELECT COUNT(*) FROM questions")
-    total_q = cursor.fetchone()[0]
-    st.info(f"सध्या डेटाबेसमध्ये एकूण **{total_q}** प्रश्न साठलेले आहेत.")
-
-    if st.button("⚠️ DELETE ALL QUESTIONS (डेटाबेस पूर्णपणे रिकामा करा)"):
-        cursor.execute("DELETE FROM questions")
-        conn.commit()
-        st.success("✅ डेटाबेस यशस्वीरित्या क्लिन करण्यात आला आहे! सर्व जुने प्रश्न डिलीट झाले आहेत.")
-        st.balloons()
+        st.warning(f"'{selected_stream}' या शाखेसाठी सध्या डेटाबेसमध्ये प्रश्न नाहीत. कृपया आधी 'AI Real Question Generator' मधून Gemini AI द्वारे प्रश्न तयार करून घ्या.")
 
 conn.close()
 """
@@ -269,4 +254,4 @@ conn.close()
 with open("app.py", "w", encoding="utf-8") as f:
     f.write(app_code)
 
-print("✅ 'app.py' फाईल यशस्वीरित्या अपडेट झाली आहे (डेटाबेस डिलीट/क्लिन ऑप्शनसह)!")
+print("✅ 'app.py' फाईल यशस्वीरित्या अपडेट झाली आहे (फक्त अस्सल AI प्रश्न आणि बॅच सिस्टम सक्रिय)!")
